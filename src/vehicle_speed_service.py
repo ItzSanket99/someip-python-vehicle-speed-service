@@ -56,25 +56,24 @@ current_speed_kmph = 0
 # GetSpeed method handler
 # ------------------------------------------------------------------
 
-async def get_speed_handler(
-    input_data: bytes,
-    client_address: Tuple[str, int],
-) -> MethodResult:
+async def get_speed_handler(input_data, client_address):
 
     logger.info("GetSpeed request received")
     logger.info("Client address: %s", client_address)
     logger.info("Current vehicle speed: %d km/h", current_speed_kmph)
 
-    # Convert current speed into SOME/IP payload bytes
+    # Serialize current vehicle speed
     payload = SpeedPayload(current_speed_kmph).serialize()
 
-    # Send method response
-    return MethodResult(
-        return_code=ReturnCode.E_OK,
-        message_type=MessageType.RESPONSE,
-        payload=payload,
-    )
+    # Create MethodResult first
+    result = MethodResult()
 
+    # Assign response fields
+    result.message_type = MessageType.RESPONSE
+    result.return_code = ReturnCode.E_OK
+    result.payload = payload
+
+    return result
 
 # ------------------------------------------------------------------
 # Build provider service
@@ -122,11 +121,13 @@ async def simulate_speed(service_instance):
             current_speed_kmph,
         )
 
-        await service_instance.send_event(
+        
+        service_instance.send_event(
             SPEED_EVENTGROUP_ID,
             SPEED_CHANGED_EVENT_ID,
             payload,
         )
+
 
         await asyncio.sleep(2)
 
@@ -159,7 +160,8 @@ async def main():
     )
 
     # Offer service to the network
-    service_instance.start_offer()
+    await service_instance.start_offer()
+        
 
     logger.info("VehicleSpeedService offered successfully")
     logger.info("Provider endpoint: %s:%d", INTERFACE_IP, PROVIDER_PORT)
@@ -170,16 +172,20 @@ async def main():
     )
 
     try:
+        
         await asyncio.Future()
 
     finally:
-
         logger.info("Stopping Vehicle ECU Provider")
 
         speed_task.cancel()
 
-        service_instance.stop_offer()
+        try:
+            await speed_task
+        except asyncio.CancelledError:
+            logger.info("Speed simulation stopped")
 
+        await service_instance.stop_offer()
         await daemon.disconnect()
 
 

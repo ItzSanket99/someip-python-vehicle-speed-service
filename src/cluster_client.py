@@ -190,7 +190,7 @@ async def main() -> None:
 
     client_instance.subscribe_eventgroup(
         speed_eventgroup,
-        5.0,
+        5,
     )
 
     print("Event-group subscription requested")
