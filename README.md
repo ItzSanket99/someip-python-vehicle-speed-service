@@ -381,15 +381,7 @@ captures/assignment1-someip.pcapng
 
 ### GetSpeed Method Response
 
-![GetSpeed Method Response](images/05-method-response.png)
-
-### SpeedChanged Event Communication
-
-![SpeedChanged Event Communication](images/06-event-notification.png)
-
-### Wireshark Packet Analysis
-
-![Wireshark Packet Analysis](images/07-wireshark-capture.png)
+![GetSpeed Method Response](images/05_method-response.png)
 
 ## 12. Experiments
 
