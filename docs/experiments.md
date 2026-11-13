@@ -228,3 +228,43 @@ _To be recorded after performing the experiment._
 | Consumer Before Provider | Pending |
 | Event Interval Modification | Pending |
 | Provider Restart | Pending |
+
+
+## Assignment 2 — Multi-ECU Experiments
+
+### Experiment 1: Vehicle Service Integration
+- Started Vehicle ECU as the service provider.
+- Started Instrument Cluster and Central Display as consumers.
+- Verified service discovery.
+- Verified GetSpeed and GetVehicleState methods.
+- Verified SpeedChanged and OverspeedWarning events.
+
+### Experiment 2: Climate Service Integration
+- Started Climate ECU as the service provider.
+- Central Display discovered ClimateService independently.
+- Verified GetCabinTemperature.
+- Verified SetTargetTemperature.
+- Verified CabinTemperatureChanged event notifications.
+
+### Experiment 3: Temperature Validation
+
+| Requested temperature | Expected status |
+|---|---|
+| 22.0°C | ACCEPTED |
+| 16.0°C | ACCEPTED |
+| 30.0°C | ACCEPTED |
+| 10.0°C | INVALID_TEMPERATURE |
+| 35.0°C | INVALID_TEMPERATURE |
+
+All five validation cases passed.
+
+### Experiment 4: Service Failure and Recovery
+- Stopped Climate ECU and observed service unavailability.
+- Restarted Climate ECU and verified recovery.
+- Stopped Vehicle ECU and observed service unavailability.
+- Restarted Vehicle ECU and verified recovery.
+
+### Experiment 5: Wireshark Capture
+- Captured multi-ECU SOME/IP communication on the loopback interface.
+- Saved the capture as `captures/assignment2-multi-ecu.pcapng`.
+- Used UDP port filtering to inspect Service Discovery and application traffic.

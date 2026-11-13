@@ -407,3 +407,115 @@ The project provides practical exposure to service-oriented communication used i
 - SOME/IP Protocol Documentation
 - someipy Python Library
 - Wireshark Documentation
+
+
+# Assignment 2: Multi-ECU SOME/IP Communication System
+
+## Project Overview
+
+This project extends the Vehicle Speed SOME/IP service into a multi-ECU communication system using Python and the `someipy` library.
+
+The system consists of four logical ECUs communicating through SOME/IP over UDP.
+
+## System Architecture
+
+| ECU | Role | Service |
+|---|---|---|
+| Vehicle ECU | Service Provider | VehicleSpeedService |
+| Instrument Cluster ECU | Service Consumer | Consumes VehicleSpeedService |
+| Climate ECU | Service Provider | ClimateService |
+| Central Display ECU | Service Consumer | Consumes VehicleSpeedService and ClimateService |
+
+## Communication Configuration
+
+### VehicleSpeedService
+- Service ID: `0x1234`
+- Instance ID: `0x5678`
+- Provider endpoint: `127.0.0.1:3000`
+- Instrument Cluster endpoint: `127.0.0.1:3002`
+- Central Display endpoint: `127.0.0.1:3004`
+
+Methods:
+- `GetSpeed` — returns vehicle speed as uint16.
+- `GetVehicleState` — returns STOPPED or MOVING as uint8.
+
+Events:
+- `SpeedChanged` — publishes current vehicle speed.
+- `OverspeedWarning` — publishes a warning when speed exceeds 80 km/h.
+
+### ClimateService
+- Service ID: `0x2234`
+- Instance ID: `0x0001`
+- Provider endpoint: `127.0.0.1:3001`
+- Central Display endpoint: `127.0.0.1:3004`
+
+Methods:
+- `GetCabinTemperature` — returns cabin temperature as signed int16.
+- `SetTargetTemperature` — accepts or rejects the requested target temperature.
+
+Event:
+- `CabinTemperatureChanged` — publishes cabin temperature updates.
+
+Valid target temperature range: 16.0°C to 30.0°C inclusive.
+
+## Technologies Used
+- Python
+- SOME/IP
+- `someipy`
+- UDP
+- SOME/IP Service Discovery
+- Wireshark
+- Linux
+
+## Project Structure
+
+```text
+01_someip-python-assignment/
+├── src/
+│   ├── vehicle_speed_interface.py
+│   ├── vehicle_speed_service.py
+│   ├── cluster_client.py
+│   ├── climate_interface.py
+│   ├── climate_service.py
+│   └── central_display.py
+├── config/
+│   └── someipyd.json
+├── captures/
+│   ├── assignment1-someip.pcapng
+│   └── assignment2-multi-ecu.pcapng
+├── docs/
+│   ├── experiments.md
+│   └── observations.md
+├── requirements.txt
+└── README.md
+```
+
+## Testing and Validation
+
+The following functionality was implemented and tested:
+- Independent discovery of VehicleSpeedService and ClimateService.
+- Request-response communication for all four methods.
+- Publish-subscribe communication for all three events.
+- Overspeed warning when speed exceeds 80 km/h.
+- Target temperature validation for the inclusive range of 16.0°C–30.0°C.
+- Multi-ECU communication demonstrated using Wireshark.
+- Service failure and recovery tested independently for Vehicle ECU and Climate ECU.
+
+## Execution
+
+Start the SOME/IP daemon:
+
+```bash
+someipyd --config config/someipyd.json
+```
+
+Run each ECU in a separate terminal:
+
+```bash
+python src/vehicle_speed_service.py
+python src/cluster_client.py
+python src/climate_service.py
+python src/central_display.py
+```
+
+Activate the project's virtual environment before running the commands.

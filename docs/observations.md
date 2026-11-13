@@ -163,3 +163,22 @@ The Vehicle ECU provides vehicle speed information through the GetSpeed method a
 The Instrument Cluster ECU successfully discovers the service, requests vehicle speed, and receives event notifications.
 
 Wireshark packet inspection provides additional understanding of the SOME/IP message structure and communication flow.
+
+
+## Assignment 2 — Observations
+
+1. VehicleSpeedService and ClimateService were discovered independently by Central Display.
+2. Both Instrument Cluster and Central Display consumed VehicleSpeedService.
+3. The Central Display received cabin temperature updates from ClimateService.
+4. The OverspeedWarning event was published when vehicle speed exceeded 80 km/h.
+5. SetTargetTemperature accepted values from 16.0°C through 30.0°C, inclusive.
+6. Requests outside the valid temperature range were rejected.
+7. Climate ECU and Vehicle ECU failure/recovery tests were performed independently.
+8. Wireshark was used to capture multi-ECU communication on the loopback interface.
+
+### Implementation Notes
+- The system uses UDP transport.
+- The SOME/IP daemon handles communication and service discovery.
+- Each service has its own Service ID and Instance ID.
+- Event IDs must be interpreted together with their Service IDs.
+- Some method calls experienced intermittent timeouts during testing; subsequent successful calls were observed. This behavior should be considered when evaluating the logs.   
