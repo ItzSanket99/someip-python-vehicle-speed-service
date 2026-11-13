@@ -13,7 +13,7 @@ from someipy import (
     TransportLayerProtocol,
 )
 
-from someipy.serialization import SomeIpPayload, Uint16
+from someipy.serialization import SomeIpPayload, Uint8, Uint16
 
 
 # ---------------------------------------------------------------------------
@@ -30,6 +30,7 @@ MAJOR_VERSION = 1
 # ---------------------------------------------------------------------------
 
 GET_SPEED_METHOD_ID = 0x0001
+GET_VEHICLE_STATE_METHOD_ID = 0x0002
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +38,10 @@ GET_SPEED_METHOD_ID = 0x0001
 # ---------------------------------------------------------------------------
 
 SPEED_CHANGED_EVENT_ID = 0x8001
+OVERSPEED_WARNING_EVENT_ID = 0x8002
+
 SPEED_EVENTGROUP_ID = 0x0001
+OVERSPEED_EVENTGROUP_ID = 0x0002
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +54,17 @@ CONSUMER_PORT = 3002
 
 
 # ---------------------------------------------------------------------------
-# Payload
+# Vehicle state constants
+# ---------------------------------------------------------------------------
+
+VEHICLE_STOPPED = 0
+VEHICLE_MOVING = 1
+
+OVERSPEED_LIMIT_KMPH = 80
+
+
+# ---------------------------------------------------------------------------
+# Payload definitions
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -62,8 +76,17 @@ class SpeedPayload(SomeIpPayload):
         self.speed_kmph = Uint16(speed_kmph)
 
 
+@dataclass
+class VehicleStatePayload(SomeIpPayload):
+
+    state: Uint8
+
+    def __init__(self, state: int = VEHICLE_STOPPED):
+        self.state = Uint8(state)
+
+
 # ---------------------------------------------------------------------------
-# GetSpeed Method
+# Methods
 # ---------------------------------------------------------------------------
 
 get_speed_method = Method(
@@ -71,9 +94,14 @@ get_speed_method = Method(
     protocol=TransportLayerProtocol.UDP,
 )
 
+get_vehicle_state_method = Method(
+    id=GET_VEHICLE_STATE_METHOD_ID,
+    protocol=TransportLayerProtocol.UDP,
+)
+
 
 # ---------------------------------------------------------------------------
-# SpeedChanged Event
+# Events
 # ---------------------------------------------------------------------------
 
 speed_changed_event = Event(
@@ -81,10 +109,24 @@ speed_changed_event = Event(
     protocol=TransportLayerProtocol.UDP,
 )
 
+overspeed_warning_event = Event(
+    id=OVERSPEED_WARNING_EVENT_ID,
+    protocol=TransportLayerProtocol.UDP,
+)
+
+
+# ---------------------------------------------------------------------------
+# Event groups
+# ---------------------------------------------------------------------------
 
 speed_eventgroup = EventGroup(
     id=SPEED_EVENTGROUP_ID,
     events=[speed_changed_event],
+)
+
+overspeed_eventgroup = EventGroup(
+    id=OVERSPEED_EVENTGROUP_ID,
+    events=[overspeed_warning_event],
 )
 
 
@@ -97,6 +139,8 @@ vehicle_speed_service = (
     .with_service_id(SERVICE_ID)
     .with_major_version(MAJOR_VERSION)
     .with_method(get_speed_method)
+    .with_method(get_vehicle_state_method)
     .with_eventgroup(speed_eventgroup)
+    .with_eventgroup(overspeed_eventgroup)
     .build()
 )
